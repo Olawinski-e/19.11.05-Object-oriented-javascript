@@ -249,6 +249,7 @@ function SecretCode() {
       return "You Guessed It";
     }
   };
+  return secretNum;
 }
 
 var secret = new SecretCode();
@@ -291,21 +292,19 @@ address.setAddress = "123 Main St, Pittsburgh, PA";
 document.write("Address : " + address.getAddress + "<br />");
 document.write("City : " + address.city + "<br />");
 
-// --------CONSTRUCTOR GETTERS AND SETTERS -------
+// ----- CONSTRUCTOR GETTERS AND SETTERS -------
 // Still used even though it is (Deprecated)
 function Coordinates() {
   this.latitude = 0.0;
   this.longitude = 0.0;
 }
 
-// Define the getter with the prototype to assign it to with
-// the property name and the getter function
+// Define the getter with the prototype to assign it to with the property name and the getter function
 Object.__defineGetter__.call(Coordinates.prototype, "getCoords", function() {
   return "Lat : " + this.latitude + " Long: " + this.longitude;
 });
 
-// Define the setter with the prototype to assign it to with
-// the property name and the setter function
+// Define the setter with the prototype to assign it to with the property name and the setter function
 Object.__defineSetter__.call(Coordinates.prototype, "setCoords", function(
   coords
 ) {
@@ -320,74 +319,351 @@ testCoords.setCoords = "40.71, 74.00";
 
 document.write("Coordinates : " + testCoords.getCoords + "<br />");
 
-document.write(+"</br>");
+// ---------- GETTERS AND SETTERS WITH DEFINEPROPERTY ----------
+function Point() {
+  this.xPos = 0;
+  this.yPos = 0;
+}
 
-// let person = {
-//   firstName: "Chuck",
-//   lastName: "Norris",
-//   birthDate: new Date("1940-03-10"),
-//   jokes: [
-//     "Chuck Norris counted to infinity... Twice.",
-//     "Chuck Norris is the only man to ever defeat a brick wall in a game of tennis"
-//   ],
-//   displayInfo: function() {
-//     console.log(
-//       `My name is ${this.firstName} ${this.lastName} and I have ${
-//         this.jokes.length
-//       } jokes!`
-//     );
-//   },
-//   getAge: function() {
-//     let today = new Date()
-//     let todayDate = Date.now(today)
-//     let age = today - this.birthDate;
-//     this.age = new Date(age);
-//     console.log(this.birthDate);
-//     console.log(today);
-//     console.log(age);
-//     console.log(todayDate);
-//     console.log(person.age)
+// Use defineProperty to set getters and setters
+// Pass the prototype to attach to along with the property name and define the functions to associate with get and set
+Object.defineProperty(Point.prototype, "pointPos", {
+  get: function() {
+    return "X: " + this.xPos + " Y: " + this.yPos;
+  },
+  set: function(thePoint) {
+    var parts = thePoint.toString().split(", ");
+    this.xPos = parts[0] || "";
+    this.yPos = parts[1] || "";
+  }
+});
 
-//     var seconds = parseInt(19400310, 10);
+var aPoint = new Point();
 
-//     var days = Math.floor(seconds / (3600 * 24));
-//     seconds -= days * 3600 * 24;
-//     var hrs = Math.floor(seconds / 3600);
-//     seconds -= hrs * 3600;
-//     var mnts = Math.floor(seconds / 60);
-//     seconds -= mnts * 60;
-//     console.log(
-//       days +
-//         " days, " +
-//         hrs +
-//         " Hrs, " +
-//         mnts +
-//         " Minutes, " +
-//         seconds +
-//         " Seconds"
-//     );
-//   },
-//   addJoke: function() {
-//    this.jokes.push()
-//   },
-//   getRandomJoke: function() {
-//     // TODO
-//   }
-// };
+aPoint.pointPos = "100, 200";
 
-// console.log(person);
-// person.getAge();
+document.write("Point Position : " + aPoint.pointPos + "<br />");
 
-// //console.log('getAge', person.getAge()) ; // Should return 79 if you are in 2019
+// -------- ECMASCRIPT 5.1 GETTERS AND SETTERS --------
 
-// //person.addJoke('Chuck Norris can divide by zero.');
-// //console.log('getRandomJoke', person.getRandomJoke());
-// // person.addJoke('Chuck Norris kills flies with his gun.');
-// // console.log('getRandomJoke', person.getRandomJoke());
-// // person.addJoke('Chuck Norris was once in a knife fight, and the knife lost.');
-// // console.log('getRandomJoke', person.getRandomJoke());
+var Circle = function(radius) {
+  this._radius = radius;
+};
 
-// //person.displayInfo();
+Circle.prototype = {
+  set radius(radius) {
+    this._radius = radius;
+  },
+  get radius() {
+    return this._radius;
+  },
+  get area() {
+    return Math.PI * (this._radius * this._radius);
+  }
+};
+var circ = new Circle(10);
 
-// document.getElementById("app").innerHTML = `<h1>Hello you</h1>
-// <div>$$$</div>`;
+circ.radius = 15;
+
+document.write(
+  "A circle with radius " +
+    circ.radius +
+    " has an area of " +
+    circ.area.toFixed(2) +
+    "<br />"
+);
+
+// ---------- INHERITANCE ----------
+// When we ask for a property if it isn't found in the main object
+// then it is searched for in the prototype object. We are able
+// to inherit methods and variables from any object in a
+// chain of objects.
+
+function Animal() {
+  this.name = "Animal";
+
+  // toString is a function in the main Object that every object inherits from
+  this.toString = function() {
+    return "My name is : " + this.name;
+  };
+}
+
+function Canine() {
+  this.name = "Canine";
+}
+
+function Wolf() {
+  this.name = "Wolf";
+}
+
+// Overwrite the prototype for Canine and Wolf
+Canine.prototype = new Animal();
+Wolf.prototype = new Canine();
+
+// After you overwrite prototype its constructor points to the
+// main object object so you have to reset the constructor after
+Canine.prototype.constructor = Canine;
+Wolf.prototype.constructor = Wolf;
+
+var arcticWolf = new Wolf();
+
+// Wolf inherits toString from Animal
+document.write(arcticWolf.toString() + "<br />");
+
+document.write(
+  "Wolf instance of Animal : " + (arcticWolf instanceof Animal) + "<br />"
+);
+
+// Properties added to any object in the chain is inherited
+Animal.prototype.sound = "Grrrrr";
+
+Animal.prototype.getSound = function() {
+  return this.name + " says " + this.sound;
+};
+
+Canine.prototype.sound = "Woof";
+Wolf.prototype.sound = "Grrrr Wooof";
+
+document.write(arcticWolf.getSound() + "<br />");
+
+// More often then not it makes more sense to just inherit the prototype to speed up the lookup process
+
+function Rodent() {
+  this.name = "Rodent";
+}
+
+function Rat() {
+  this.name = "Rat";
+}
+
+Rodent.prototype = new Animal();
+Rat.prototype = Rodent.prototype;
+Rodent.prototype.constructor = Rodent;
+Rat.prototype.constructor = Rat;
+
+var caneRat = new Rat();
+
+// Wolf inherits toString from Animal
+document.write(caneRat.toString() + "<br />");
+
+// ------- INTERMEDIATE FUNCTION INHERITANCE -------
+function extend(Child, Parent) {
+  var Temp = function() {};
+
+  Temp.prototype = Parent.prototype;
+
+  Child.prototype = new Temp();
+
+  Child.prototype.constructor = Child;
+}
+
+function Deer() {
+  this.name = "Deer";
+  this.sound = "Snort";
+}
+
+extend(Deer, Animal);
+
+var elk = new Deer();
+
+document.write(elk.getSound() + "<br />");
+
+// ---------- CALL PARENT METHODS ----------
+function Vehicle(name) {
+  this.name = "Vehicle";
+}
+
+// Functions for the parent object
+Vehicle.prototype = {
+  drive: function() {
+    return this.name + " drives forward";
+  },
+  stop: function() {
+    return this.name + " stops";
+  }
+};
+
+function Truck(name) {
+  this.name = name;
+}
+
+// Inherit from Vehicle
+Truck.prototype = new Vehicle();
+Truck.prototype.constructor = Truck;
+
+// Overwrite drive parent method
+Truck.prototype.drive = function() {
+  // Call the parent method with apply so that the parent method can access the Trucks name value
+  var driveMsg = Vehicle.prototype.drive.apply(this);
+  return (driveMsg += " through a field");
+};
+
+var jeep = new Truck("Jeep");
+
+document.write(jeep.drive() + "<br />");
+document.write(jeep.stop() + "<br />");
+
+// ------------------------------------------
+
+var addStuff = {
+  sum(num1, num2) {
+    return num1 + num2;
+  }
+};
+
+document.write("1 + 2 = ", addStuff.sum(1, 2) + "</br>");
+
+// ---------- SINGLETON PATTERN ----------
+// Singletons are used when you only ever want 1 object to be created
+// Let's say you want to create a game character with fixed stats
+function Hero(name) {
+  // Check if the object exists
+  if (typeof Hero.instance === "object") {
+    // If it does return it
+    return Hero.instance;
+  }
+
+  // if it doesn't then create the hero
+  this.name = name;
+  Hero.instance = this;
+
+  return this;
+}
+
+var derekHero = new Hero("Derek");
+document.write("Are hero is " + derekHero.name + "<br />");
+
+// This won't change the name to Paul
+var paulHero = new Hero("Paul");
+document.write("Are hero is " + paulHero.name + "<br />");
+
+// ---------- FACTORY PATTERN ----------
+// The factory pattern can be used to generate different
+// objects on request
+
+function Sword(desc) {
+  this.weaponType = "Sword";
+  this.metal = desc.metal || "Steel";
+  this.style = desc.style || "Longsword";
+  this.hasMagic = desc.hasMagic || false;
+}
+
+function Bow(desc) {
+  this.weaponType = "Bow";
+  this.material = desc.material || "Wood";
+  this.style = desc.style || "Longbow";
+  this.hasMagic = desc.hasMagic || false;
+}
+
+function WeaponFactory() {}
+
+WeaponFactory.prototype.makeWeapon = function(desc) {
+  var weaponClass = null;
+
+  if (desc.weaponType === "Sword") {
+    weaponClass = Sword;
+  } else if (desc.weaponType === "Bow") {
+    weaponClass = Bow;
+  } else {
+    return false;
+  }
+
+  return new weaponClass(desc);
+};
+
+var myWeaponFact = new WeaponFactory();
+
+var bladeFist = myWeaponFact.makeWeapon({
+  weaponType: "Sword",
+  metal: "Dark Iron",
+  style: "Scythe",
+  hasMagic: true
+});
+
+document.write(
+  bladeFist.weaponType +
+    " of type " +
+    bladeFist.style +
+    " crafted from " +
+    bladeFist.metal +
+    "<br />"
+);
+
+// ---------- DECORATOR PATTERN ----------
+// The decorator pattern allows you alter an object at run time
+function Pizza(price) {
+  this.price = price || 10;
+}
+
+Pizza.prototype.getPrice = function() {
+  return this.price;
+};
+
+function ExtraCheese(pizza) {
+  var prevPrice = pizza.price;
+
+  pizza.price = prevPrice + 1;
+}
+
+var myPizza = new Pizza(11);
+
+ExtraCheese(myPizza);
+
+document.write("Cost of Pizza : $" + myPizza.price + "<br />");
+
+// ---------- OBSERVER PATTERN ----------
+// A single object notifies many objects (observers) when a state change occurs
+var Observable = function() {
+  this.subscribers = [];
+};
+
+Observable.prototype = {
+  subscribe: function(subscriber) {
+    // Add the subscriber object to the list
+    this.subscribers.push(subscriber);
+  },
+  unsubscribe: function(unsubscriber) {
+    // Cycle through the subscriber array and delete
+    // the unsubscriber
+    for (let i = 0; i < this.subscribers.length; i++) {
+      if (this.subscribers[i] === unsubscriber) {
+        this.subscribers.splice(i, 1);
+
+        // We assume it only subscribed once so we leave after it is found
+        return unsubscriber.name;
+      }
+    }
+  },
+  publish: function(data) {
+    // Cycle through all subscribers and send them the update
+    for (let i = 0; i < this.subscribers.length; i++) {
+      this.subscribers[i].receiveData(data);
+    }
+  }
+};
+
+var OrganFanny = {
+  name: "Organ Fanny",
+  receiveData: function(data) {
+    document.write(this.name + " received your info : " + data + "<br />");
+  }
+};
+
+var BoldmanYaks = {
+  name: "Boldman Yaks",
+  receiveData: function(data) {
+    document.write(this.name + " received your info : " + data + "<br />");
+  }
+};
+
+// Add subscribers and alert them
+let observable = new Observable();
+observable.subscribe(OrganFanny);
+observable.subscribe(BoldmanYaks);
+observable.publish("IBM at $145.30");
+
+document.write(observable.unsubscribe(OrganFanny) + " Unsubscribed<br />");
+
+observable.publish("IBM at $145.33");
+
+//--------------------------------------------
